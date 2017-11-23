@@ -40,20 +40,18 @@ def value_iteration(P, nS, nA, gamma=0.9, max_iteration=20, tol=1e-3):
     # YOUR IMPLEMENTATION HERE #
     idx = 1
     new_V = V.copy()
-    idx = 0
-    print P[13][2]
-    print P[14][1]
     while idx<=max_iteration or np.sum(np.sqrt(np.square(new_V-V)))>tol:
         idx += 1
         V = new_V
         for state in range(nS):
-            max_result = 0
+            max_result = -10
             max_idx = 0
             for action in range(nA):
                 result = P[state][action]
+                temp = result[0][2]
                 for num in range(len(result)):
                     (probability, nextstate, reward, terminal) = result[num]
-                    temp = reward + gamma*probability*V[nextstate]
+                    temp += gamma*probability*V[nextstate]
                     if max_result < temp:
                         max_result = temp
                         max_idx = action
@@ -100,10 +98,10 @@ def policy_evaluation(P, nS, nA, policy, gamma=0.9, max_iteration=100, tol=1e-3)
         value_function = new_value_function.copy()
         for state in range(nS):
             result = P[state][policy[state]]
+            new_value_function[state] = result[0][2]
             for num in range(len(result)):
                 (probability, nextstate, reward, terminal) = result[num]
-                new_value_function[state] = reward
-                new_value_function[state] += (gamma*probability * value_function[nextstate])
+                new_value_function[state] += (gamma * probability * value_function[nextstate])
     ############################
     return new_value_function
 
@@ -149,7 +147,7 @@ def policy_improvement(P, nS, nA, value_from_policy, policy, gamma=0.9):
     return new_policy
 
 
-def policy_iteration(P, nS, nA, gamma=0.9, max_iteration=20, tol=1e-3):
+def policy_iteration(P, nS, nA, gamma=0.9, max_iteration=200, tol=1e-3):
     """Runs policy iteration.
 
     You should use the policy_evaluation and policy_improvement methods to
@@ -248,7 +246,5 @@ if __name__ == "__main__":
     #example(env)
     V_vi, p_vi = value_iteration(env.P, env.nS, env.nA, gamma=0.9, max_iteration=20, tol=1e-3)
     #V_pi, p_pi = policy_iteration(env.P, env.nS, env.nA, gamma=0.9, max_iteration=20, tol=1e-3)
-    print V_vi
-    print p_vi
-    #render_single(env, p_vi)
+    render_single(env, p_vi)
 	
