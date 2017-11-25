@@ -6,126 +6,144 @@ import numpy as np
 import gym
 import time
 from lake_envs import *
+import matplotlib.pyplot as plt
 
 from vi_and_pi import value_iteration
 
 def initialize_P(nS, nA):
-  """Initializes a uniformly random model of the environment with 0 rewards.
+    """Initializes a uniformly random model of the environment with 0 rewards.
 
     Parameters
     ----------
     nS: int
-      Number of states
+        Number of states
     nA: int
-      Number of actions
+        Number of actions
 
     Returns
     -------
     P: np.array of shape [nS x nA x nS x 4] where items are tuples representing transition information
-      P[state][action] is a list of (prob, next_state, reward, done) tuples.
-  """
-  P = [[[(1.0/nS, i, 0, False) for i in range(nS)] for _ in range(nA)] for _ in range(nS)]
+        P[state][action] is a list of (prob, next_state, reward, done) tuples.
+    """
+    P = [[[(1.0/nS, i, 0, False) for i in range(nS)] for _ in range(nA)] for _ in range(nS)]
 
-  return P
+    return P
 
 def initialize_counts(nS, nA):
-  """Initializes a counts array.
+    """Initializes a counts array.
 
     Parameters
     ----------
     nS: int
-      Number of states
+        Number of states
     nA: int
-      Number of actions
+        Number of actions
 
     Returns
     -------
     counts: np.array of shape [nS x nA x nS]
-      counts[state][action][next_state] is the number of times that doing "action" at state "state" transitioned to "next_state"
-  """
-  counts = [[[0 for _ in range(nS)] for _ in range(nA)] for _ in range(nS)]
+        counts[state][action][next_state] is the number of times that doing "action" at state "state" transitioned to "next_state"
+    """
+    counts = [[[0 for _ in range(nS)] for _ in range(nA)] for _ in range(nS)]
 
-  return counts
+    return counts
 
 def initialize_rewards(nS, nA):
-  """Initializes a rewards array. Values represent running averages.
+    """Initializes a rewards array. Values represent running averages.
 
     Parameters
     ----------
     nS: int
-      Number of states
+        Number of states
     nA: int
-      Number of actions
+        Number of actions
 
     Returns
     -------
     rewards: array of shape [nS x nA x nS]
-      counts[state][action][next_state] is the running average of rewards of doing "action" at "state" transtioned to "next_state"
-  """
-  rewards = [[[0 for _ in range (nS)] for _ in range(nA)] for _ in range(nS)]
+        counts[state][action][next_state] is the running average of rewards of doing "action" at "state" transtioned to "next_state"
+    """
+    rewards = [[[0 for _ in range (nS)] for _ in range(nA)] for _ in range(nS)]
 
-  return rewards
+    return rewards
 
-def counts_and_rewards_to_P(counts, rewards):
-  """Converts counts and rewards arrays to a P array consistent with the Gym environment data structure for a model of the environment.
+def counts_and_rewards_to_P(counts, rewards, terminal_state):
+    """Converts counts and rewards arrays to a P array consistent with the Gym environment data structure for a model of the environment.
     Use this function to convert your counts and rewards arrays to a P that you can use in value iteration.
 
     Parameters
     ----------
     counts: array of shape [nS x nA x nS]
-      counts[state][action][next_state] is the number of times that doing "action" at state "state" transitioned to "next_state"
+        counts[state][action][next_state] is the number of times that doing "action" at state "state" transitioned to "next_state"
     rewards: array of shape [nS x nA x nS]
-      counts[state][action][next_state] is the running average of rewards of doing "action" at "state" transtioned to "next_state"
+        counts[state][action][next_state] is the running average of rewards of doing "action" at "state" transtioned to "next_state"
 
     Returns
     -------
-    P: np.array of shape [nS x nA x nS x 4] where items are tuples representing transition information
-      P[state][action] is a list of (prob, next_state, reward, done) tuples.
-  """
-  nS = len(counts)
-  nA = len(counts[0])
-  P = [[[] for _ in range(nA)] for _ in range(nS)]
+    P: np.array of shape [nS x nA x nS' x 4] where items are tuples representing transition information
+        P[state][action] is a list of (prob, next_state, reward, done) tuples.
+    """
+    nS = len(counts)
+    nA = len(counts[0])
+    P = [[[] for _ in range(nA)] for _ in range(nS)]
+   
+    for state in range(nS):
+        for action in range(nA):
+            if sum(counts[state][action]) != 0:
+                for next_state in range(nS):
+                    if counts[state][action][next_state] != 0:
+                        prob = float(counts[state][action][next_state]) / float(sum(counts[state][action]))
+                        reward = rewards[state][action][next_state]
+                        if next_state in terminal_state:
+                            P[state][action].append((prob, next_state, reward, True))
+                        else:
+                            P[state][action].append((prob, next_state, reward, False))
+            else:
+                prob = 1.0 / float(nS)
+                for next_state in range(nS):
+                    P[state][action].append((prob, next_state, 0, False))
+    
+    #for action in range(nA):
+    #P[nS-2][2][nS-1] = (1.0, nS-1, 1, True)
 
-  for state in range(nS):
-    for action in range(nA):
-      if sum(counts[state][action]) != 0:
-        for next_state in range(nS):
-          if counts[state][action][next_state] != 0:
-            prob = float(counts[state][action][next_state]) / float(sum(counts[state][action]))
-            reward = rewards[state][action][next_state]
-            P[state][action].append((prob, next_state, reward, False))
-      else:
-        prob = 1.0 / float(nS)
-        for next_state in range(nS):
-          P[state][action].append((prob, next_state, 0, False))
-
-  return P
+    return P
 
 def update_mdp_model_with_history(counts, rewards, history):
-  """Given a history of an entire episode, update the count and rewards arrays
+    """Given a history of an entire episode, update the count and rewards arrays
 
     Parameters
     ----------
     counts: array of shape [nS x nA x nS]
-      counts[state][action][next_state] is the number of times that doing "action" at state "state" transitioned to "next_state"
+        counts[state][action][next_state] is the number of times that doing "action" at state "state" transitioned to "next_state"
     rewards: array of shape [nS x nA x nS]
-      counts[state][action][next_state] is the running average of rewards of doing "action" at "state" transtioned to "next_state"
+        counts[state][action][next_state] is the running average of rewards of doing "action" at "state" transtioned to "next_state"
     history: 
-      a list of [state, action, reward, next_state, done]
-  """
+        a list of [state, action, reward, next_state, done]
+    """
 
-  # HINT: For terminal states, we define that the probability of any action returning the state to itself is 1 (with zero reward)
-  # Make sure you record this information in your counts array by updating the counts for this accordingly for your
-  # value iteration to work.
+    # HINT: For terminal states, we define that the probability of any action returning the state to itself is 1 (with zero reward)
+    # Make sure you record this information in your counts array by updating the counts for this accordingly for your
+    # value iteration to work.
 
-  ############################
-  # YOUR IMPLEMENTATION HERE #
-  ############################
-
-  return counts, rewards
+    ############################
+    # YOUR IMPLEMENTATION HERE #
+    for item in history:
+        #print item
+        (state, action, reward, next_state, done) = item
+        #if not done:
+        #    counts[state][action][next_state] += 1
+        #    rewards[state][action][next_state] = float(rewards[state][action][next_state]+reward) / counts[state][action][next_state]
+        #else:
+        #    counts[state][action][next_state] = 1
+        #    rewards[state][action][next_state] = float(rewards[state][action][next_state]+reward) / counts[state][action][next_state]
+        counts[state][action][next_state] += 1
+        all_reward = float(rewards[state][action][next_state]*(counts[state][action][next_state]-1)+reward)
+        rewards[state][action][next_state] = all_reward / counts[state][action][next_state]
+    ############################
+    return counts, rewards
 
 def learn_with_mdp_model(env, num_episodes=5000, gamma = 0.95, e = 0.8, decay_rate = 0.99):
-  """Build a model of the environment and use value iteration to learn a policy. In the next episode, play with the new 
+    """Build a model of the environment and use value iteration to learn a policy. In the next episode, play with the new 
     policy using epsilon-greedy exploration. 
 
     Your model of the environment should be based on updating counts and rewards arrays. The counts array counts the number
@@ -142,64 +160,102 @@ def learn_with_mdp_model(env, num_episodes=5000, gamma = 0.95, e = 0.8, decay_ra
     Parameters
     ----------
     env: gym.core.Environment
-      Environment to compute Q function for. Must have nS, nA, and P as
-      attributes.
+        Environment to compute Q function for. Must have nS, nA, and P as
+        attributes.
     num_episodes: int 
-      Number of episodes of training.
+        Number of episodes of training.
     gamma: float
-      Discount factor. Number in range [0, 1)
+        Discount factor. Number in range [0, 1)
     learning_rate: float
-      Learning rate. Number in range [0, 1)
+        Learning rate. Number in range [0, 1)
     e: float
-      Epsilon value used in the epsilon-greedy method. 
+        Epsilon value used in the epsilon-greedy method. 
     decay_rate: float
-      Rate at which epsilon falls. Number in range [0, 1)
+        Rate at which epsilon falls. Number in range [0, 1)
 
     Returns
     -------
     policy: np.array
-      An array of shape [env.nS] representing the action to take at a given state.
+        An array of shape [env.nS] representing the action to take at a given state.
     """
 
-  P = initialize_P(env.nS, env.nA)
-  counts = initialize_counts(env.nS, env.nA)
-  rewards = initialize_rewards(env.nS, env.nA)
+    P = initialize_P(env.nS, env.nA)
+    counts = initialize_counts(env.nS, env.nA)
+    rewards = initialize_rewards(env.nS, env.nA)
 
-  ############################
-  # YOUR IMPLEMENTATION HERE #
-  ############################
+    ############################
+    # YOUR IMPLEMENTATION HERE #
+    new_policy = np.zeros((env.nS)).astype(int)
+    terminal_state = []
+    for i in range(num_episodes):
+        done = False
+        state = env.reset()
+        his = []
+        while not done:
+            if np.random.rand() > e:
+                action = new_policy[state]
+            else:
+                action = np.random.randint(env.nA)
+            nextstate, reward, done, _ = env.step(action)
+            his.append([state, action, reward, nextstate, done])
+            state = nextstate
+        if state not in terminal_state:
+            terminal_state.append(state)
+        counts, rewards = update_mdp_model_with_history(counts, rewards, his)
+        P = counts_and_rewards_to_P(counts, rewards, terminal_state)
+        _, new_policy = value_iteration(P, env.nS, env.nA, gamma)
 
-  return np.zeros((env.nS)).astype(int)
+        if i%10 == 0:
+            e *= decay_rate
+    ############################
+
+    return new_policy
 
 def render_single(env, policy):
-  """Renders policy once on environment. Watch your agent play!
+    """Renders policy once on environment. Watch your agent play!
 
     Parameters
     ----------
     env: gym.core.Environment
-      Environment to play on. Must have nS, nA, and P as
-      attributes.
+        Environment to play on. Must have nS, nA, and P as
+        attributes.
     Policy: np.array of shape [env.nS]
-      The action to take at a given state
-  """
+        The action to take at a given state
+    """
 
-  episode_reward = 0
-  state = env.reset()
-  done = False
-  while not done:
-    env.render()
-    time.sleep(0.5) # Seconds between frames. Modify as you wish.
-    action = policy[state]
-    state, reward, done, _ = env.step(action)
-    episode_reward += reward
+    episode_reward = 0
+    state = env.reset()
+    done = False
+    while not done:
+        #env.render()
+        #time.sleep(0.5) # Seconds between frames. Modify as you wish.
+        action = policy[state]
+        state, reward, done, _ = env.step(action)
+        episode_reward += reward
 
-  print "Episode reward: %f" % episode_reward
+    print "Episode reward: %f" % episode_reward
+    return episode_reward
 
 # Feel free to run your own debug code in main!
 def main():
-  env = gym.make('Stochastic-4x4-FrozenLake-v0')
-  policy = learn_with_mdp_model(env)
-  render_single(env, policy)
-
+    env = gym.make('Stochastic-4x4-FrozenLake-v0')
+    policy = learn_with_mdp_model(env)
+    #render_single(env, policy)
+    #print policy
+    
+    score = []
+    for i in range(1000):
+        episode_reward = render_single(env, policy)
+        score.append(episode_reward)
+        print i
+    for i in range(len(score)):
+        score[i] = np.mean(score[:i+1])
+    plt.plot(np.arange(1000),np.array(score))
+    plt.title('The running average score of the model-based learning agent')
+    plt.xlabel('traning episodes')
+    plt.ylabel('score')
+    #plt.show()
+    plt.savefig('d.jpg')
+    
 if __name__ == '__main__':
     main()
