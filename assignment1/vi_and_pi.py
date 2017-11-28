@@ -40,6 +40,7 @@ def value_iteration(P, nS, nA, gamma=0.9, max_iteration=20, tol=1e-3):
     # YOUR IMPLEMENTATION HERE #
     idx = 1
     new_V = V.copy()
+    #print P[14][2]
     while idx<=max_iteration or np.sum(np.sqrt(np.square(new_V-V)))>tol:
         idx += 1
         V = new_V
@@ -48,7 +49,8 @@ def value_iteration(P, nS, nA, gamma=0.9, max_iteration=20, tol=1e-3):
             max_idx = 0
             for action in range(nA):
                 result = P[state][action]
-                temp = result[0][2]
+                temp = np.array(result)[:,2].mean()
+                #temp = result[0][2]
                 for num in range(len(result)):
                     (probability, nextstate, reward, terminal) = result[num]
                     temp += gamma*probability*V[nextstate]
@@ -98,7 +100,7 @@ def policy_evaluation(P, nS, nA, policy, gamma=0.9, max_iteration=100, tol=1e-3)
         value_function = new_value_function.copy()
         for state in range(nS):
             result = P[state][policy[state]]
-            new_value_function[state] = result[0][2]
+            new_value_function[state] = np.array(result)[:,2].mean()
             for num in range(len(result)):
                 (probability, nextstate, reward, terminal) = result[num]
                 new_value_function[state] += (gamma * probability * value_function[nextstate])
@@ -226,7 +228,7 @@ def render_single(env, policy):
     ob = env.reset()
     for t in range(100):
         env.render()
-        time.sleep(0.5) # Seconds between frames. Modify as you wish.
+        #time.sleep(0.5) # Seconds between frames. Modify as you wish.
         a = policy[ob]
         ob, rew, done, _ = env.step(a)
         episode_reward += rew
