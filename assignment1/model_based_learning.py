@@ -7,8 +7,10 @@ import gym
 import time
 from lake_envs import *
 import matplotlib.pyplot as plt
+from tqdm import *
 
 from vi_and_pi import value_iteration
+from vi_and_pi import policy_iteration
 
 def initialize_P(nS, nA):
     """Initializes a uniformly random model of the environment with 0 rewards.
@@ -142,7 +144,7 @@ def update_mdp_model_with_history(counts, rewards, history):
     ############################
     return counts, rewards
 
-def learn_with_mdp_model(env, num_episodes=5000, gamma = 0.95, e = 0.8, decay_rate = 0.99):
+def learn_with_mdp_model(env, method=None, num_episodes=5000, gamma = 0.95, e = 0.8, decay_rate = 0.99):
     """Build a model of the environment and use value iteration to learn a policy. In the next episode, play with the new 
     policy using epsilon-greedy exploration. 
 
@@ -203,7 +205,7 @@ def learn_with_mdp_model(env, num_episodes=5000, gamma = 0.95, e = 0.8, decay_ra
             terminal_state.append(state)
         counts, rewards = update_mdp_model_with_history(counts, rewards, his)
         P = counts_and_rewards_to_P(counts, rewards, terminal_state)
-        _, new_policy = value_iteration(P, env.nS, env.nA, gamma)
+        _, new_policy = method(P, env.nS, env.nA, gamma)
 
         if i%10 == 0:
             e *= decay_rate
@@ -233,29 +235,37 @@ def render_single(env, policy):
         state, reward, done, _ = env.step(action)
         episode_reward += reward
 
-    print "Episode reward: %f" % episode_reward
+    #print "Episode reward: %f" % episode_reward
     return episode_reward
 
 # Feel free to run your own debug code in main!
 def main():
     env = gym.make('Stochastic-4x4-FrozenLake-v0')
-    policy = learn_with_mdp_model(env)
     #render_single(env, policy)
     #print policy
     
-    score = []
-    for i in range(1000):
-        episode_reward = render_single(env, policy)
-        score.append(episode_reward)
-        print i
-    for i in range(len(score)):
-        score[i] = np.mean(score[:i+1])
-    plt.plot(np.arange(1000),np.array(score))
+    score1 = []
+    score2 = []
+    average_score1 = []
+    average_score2 = []
+    for i in tqdm(np.arange(1, 5000, 50)):
+        policy1 = learn_with_mdp_model(env, method=value_iteration, num_episodes=i+1)
+        policy2 = learn_with_mdp_model(env, method=policy_iteration, num_episodes=i+1)
+        episode_reward1 = render_single(env, policy1)
+        episode_reward2 = render_single(env, policy2)
+        score1.append(episode_reward1)
+        score2.append(episode_reward2)
+    for i in range(100):
+        average_score1[i] = np.mean(score1[:i+1])
+        average_score2[i] = np.mean(score2[:i+1])
+    plt.plot(np.arange(1, 5000, 50),np.array(average_score1))
+    plt.plot(np.arange(1, 5000, 50),np.array(average_score2))
     plt.title('The running average score of the model-based learning agent')
     plt.xlabel('traning episodes')
     plt.ylabel('score')
+    plt.legend(['value-iteration', 'policy_iteration'], loc='upper right')
     #plt.show()
-    plt.savefig('d.jpg')
+    plt.savefig('model-based.jpg')
     
 if __name__ == '__main__':
     main()

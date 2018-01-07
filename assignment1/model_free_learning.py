@@ -7,6 +7,7 @@ import gym
 import time
 from lake_envs import *
 import matplotlib.pyplot as plt
+from tqdm import *
 
 def learn_Q_QLearning(env, num_episodes=2000, gamma=0.95, lr=0.1, e=0.8, decay_rate=0.99):
     """Learn state-action values using the Q-learning algorithm with epsilon-greedy exploration strategy.
@@ -140,20 +141,28 @@ def render_single_Q(env, Q):
 # Feel free to run your own debug code in main!
 def main():
     env = gym.make('Stochastic-4x4-FrozenLake-v0')
-    Q = learn_Q_QLearning(env)
-    #Q = learn_Q_SARSA(env)
-    score = []
-    for i in range(1000):
-        episode_reward = render_single_Q(env, Q)
-        score.append(episode_reward)
-    for i in range(len(score)):
-        score[i] = np.mean(score[:i+1])
-    plt.plot(np.arange(1000),np.array(score))
+    score1 = []
+    score2 = []
+    average_score1 = []
+    average_score2 = []
+    for i in tqdm(range(4000)):
+        Q1 = learn_Q_QLearning(env, num_episodes=i+1)
+        Q2 = learn_Q_SARSA(env, num_episodes=i+1)
+        episode_reward1 = render_single_Q(env, Q1)
+        episode_reward2 = render_single_Q(env, Q2)
+        score1.append(episode_reward1)
+        score2.append(episode_reward2)
+    for i in range(4000):
+        average_score1.append(np.mean(score1[:i+1]))
+        average_score2.append(np.mean(score2[:i+1]))
+    plt.plot(np.arange(4000),np.array(average_score1))
+    plt.plot(np.arange(4000),np.array(average_score2))
     plt.title('The running average score of the Q-learning agent')
     plt.xlabel('traning episodes')
     plt.ylabel('score')
+    plt.legend(['q-learning', 'sarsa'], loc='upper right')
     #plt.show()
-    plt.savefig('c.jpg')
+    plt.savefig('model-free.jpg')
            
 if __name__ == '__main__':
     main()
