@@ -1,0 +1,18 @@
+2017-11-29 16:06:16,994:INFO: Making new env: Pong-v0
+2017-11-29 16:06:17,179:INFO: Creating monitor directory results/q4_train_atari_linear/monitor/
+2017-11-29 16:06:17,187:INFO: Starting new video recorder writing to /home/zengliang/CS234/assignment2/results/q4_train_atari_linear/monitor/openaigym.video.0.5469.video000000.mp4
+2017-11-29 16:06:18,628:INFO: Finished writing results. You can upload them to the scoreboard via gym.upload('/home/zengliang/CS234/assignment2/results/q4_train_atari_linear/monitor')
+2017-11-29 16:06:18,629:INFO: Evaluating...
+2017-11-29 16:07:00,357:INFO: Average reward: -20.98 +/- 0.02
+2017-11-29 16:30:31,583:INFO: Evaluating...
+2017-11-30 12:01:58,705:INFO: Making new env: Pong-v0
+2017-11-30 12:01:58,917:INFO: Starting new video recorder writing to /home/zengliang/CS234/assignment2/results/q4_train_atari_linear/monitor/openaigym.video.0.3758.video000000.mp4
+2017-11-30 12:02:01,397:INFO: Finished writing results. You can upload them to the scoreboard via gym.upload('/home/zengliang/CS234/assignment2/results/q4_train_atari_linear/monitor')
+2017-11-30 12:02:01,397:INFO: Evaluating...
+2017-11-30 12:02:40,550:INFO: Average reward: -20.98 +/- 0.02
+2017-11-30 14:37:22,473:INFO: Making new env: Pong-v0
+2017-11-30 14:37:22,717:INFO: Starting new video recorder writing to /home/zengliang/CS234/assignment2/results/q4_train_atari_linear/monitor/openaigym.video.0.2799.video000000.mp4
+2017-11-30 14:37:26,391:INFO: Finished writing results. You can upload them to the scoreboard via gym.upload('/home/zengliang/CS234/assignment2/results/q4_train_atari_linear/monitor')
+2017-11-30 14:37:26,392:INFO: Evaluating...
+2017-11-30 14:38:24,987:INFO: Average reward: -20.90 +/- 0.06
+2017-11-30 15:03:46,854:INFO: Evaluating...
