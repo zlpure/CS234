@@ -1,6 +1,6 @@
 ## My Solution of Assignments of CS234
-This is my solution of three assignments of CS224n.<br>
-[CS231: Deep Reinforcement Learning](http://cs234.stanford.edu/) is
+This is my solution of three assignments of CS234.<br>
+[CS234: Deep Reinforcement Learning](http://cs234.stanford.edu/) is
 an interesting class, which teaches you reinforcement learning:
  Learn to make good sequences of decisions. This class provides some basic knowledges and insights of cutting-edge research in reinforment learning. More details are as follows:
 * Define the key features of RL vs AI & other ML 
