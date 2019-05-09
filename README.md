@@ -1,5 +1,5 @@
-## My Solution of Assignments of CS234
-This is my solution of three assignments of CS234.<br>
+## My Solution to Assignments of CS234
+This is my solution to three assignments of CS234.<br>
 [CS234: Deep Reinforcement Learning](http://cs234.stanford.edu/) is
 an interesting class, which teaches you what is the reinforcement learning:
  Learn to make good sequences of decisions. This class provides some basic knowledge and insights of cutting-edge research in reinforcement learning. More details are as follows:
