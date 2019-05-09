@@ -1,18 +1,17 @@
 ## My Solution of Assignments of CS234
 This is my solution of three assignments of CS234.<br>
 [CS234: Deep Reinforcement Learning](http://cs234.stanford.edu/) is
-an interesting class, which teaches you reinforcement learning:
- Learn to make good sequences of decisions. This class provides some basic knowledges and insights of cutting-edge research in reinforment learning. More details are as follows:
+an interesting class, which teaches you what is the reinforcement learning:
+ Learn to make good sequences of decisions. This class provides some basic knowledge and insights of cutting-edge research in reinforcement learning. More details are as follows:
 * Define the key features of RL vs AI & other ML 
 * Define MDP, POMDP, bandit, batch offline RL, online RL
 * Describe the exploration vs exploitation challenge and compare and contrast 2 or more approaches
-* Given an application problem (e.g. from computer vision, robotics, etc) decide if it should be formulated as a RL     problem, if yes how to formulate, what algorithm (from class) is best suited to addressing, and justify answer
+* Given an application problem (e.g. from computer vision, robotics, etc) decide if it should be formulated as a RL problem, if yes how to formulate, what algorithm (from class) is best suited to address, and justify an answer
 * Implement several RL algorithms incl. a deep RL approach
 * Describe multiple criteria for analyzing RL algorithms and evaluate algorithms on these metrics: e.g. regret, sample complexity, computational complexity, convergence, etc. 
 * List at least two open challenges or hot topics in RL
 ******
-**Note:** If you consult my code that you may want to incorporate into your strategy or algorithm, 
-so long as you clearly cite your sources in your code and your writeup.
+**Note:** If you consult my source codes that you may want to incorporate into your algorithm or system, you should clearly cite references in your codes.
 ******
 
 ## Table of Contents
